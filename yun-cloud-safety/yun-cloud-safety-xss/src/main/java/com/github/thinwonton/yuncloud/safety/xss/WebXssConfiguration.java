@@ -9,6 +9,7 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -39,4 +40,9 @@ public class WebXssConfiguration implements WebMvcConfigurer {
         return builder -> builder.deserializers(new JacksonXssCleanJsonDeserializer(xssCleaner));
     }
 
+    @Override
+    public void addFormatters(FormatterRegistry registry) {
+        XssCleaner xssCleaner = xssCleaner();
+        registry.addConverter(new XssCleanConverter(xssCleaner));
+    }
 }

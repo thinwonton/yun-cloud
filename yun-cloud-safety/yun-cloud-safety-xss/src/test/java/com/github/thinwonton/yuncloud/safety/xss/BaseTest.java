@@ -5,13 +5,13 @@ public class BaseTest {
     protected String cleanedHtml = "<p><a href=\"http://www.baidu.com\"> 百度一下，你就知道 </a></p>";
 
 
-    protected static class Page {
+    static class Paper {
         private String content;
 
-        public Page() {
+        public Paper() {
         }
 
-        public Page(String content) {
+        public Paper(String content) {
             this.content = content;
         }
 
@@ -25,7 +25,7 @@ public class BaseTest {
 
         @Override
         public String toString() {
-            final StringBuffer sb = new StringBuffer("Page{");
+            final StringBuffer sb = new StringBuffer("Paper{");
             sb.append("content='").append(content).append('\'');
             sb.append('}');
             return sb.toString();

@@ -23,10 +23,10 @@ public class JacksonJsonTest extends BaseTest {
         module.addDeserializer(String.class, new JacksonXssCleanJsonDeserializer(xssCleaner));
         objectMapper.registerModule(module);
 
-        Page pageToSerialize = new Page(dirtyHtml);
-        String jsonStrToTest = objectMapper.writeValueAsString(pageToSerialize);
-        Page page = objectMapper.readValue(jsonStrToTest, Page.class);
-        Assert.assertEquals(cleanedHtml, page.getContent());
+        Paper toSerialize = new Paper(dirtyHtml);
+        String jsonStrToTest = objectMapper.writeValueAsString(toSerialize);
+        Paper paper = objectMapper.readValue(jsonStrToTest, Paper.class);
+        Assert.assertEquals(cleanedHtml, paper.getContent());
     }
 
 }
