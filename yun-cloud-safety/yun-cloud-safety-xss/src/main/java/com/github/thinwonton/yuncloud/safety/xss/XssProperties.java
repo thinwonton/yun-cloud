@@ -2,6 +2,9 @@ package com.github.thinwonton.yuncloud.safety.xss;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.github.thinwonton.yuncloud.safety.xss.XssProperties.XSS_PROPERTIES_PREFIX;
 
 @ConfigurationProperties(prefix = XSS_PROPERTIES_PREFIX)
@@ -17,17 +20,14 @@ public class XssProperties {
     private boolean enabled = true;
 
     /**
-     * jackson的相关配置
+     * 拦截的路径规则。不设置时为全部拦截
      */
-    private JacksonXssProperties jackson;
+    private List<String> pathPatterns = new ArrayList<>();
 
-    public JacksonXssProperties getJackson() {
-        return jackson;
-    }
-
-    public void setJackson(JacksonXssProperties jackson) {
-        this.jackson = jackson;
-    }
+    /**
+     * 放弃拦截的路径规则
+     */
+    private List<String> excludePatterns = new ArrayList<>();
 
     public boolean isEnabled() {
         return enabled;
@@ -37,19 +37,19 @@ public class XssProperties {
         this.enabled = enabled;
     }
 
-    private static class JacksonXssProperties {
-        /**
-         * 启用jackson的xss过滤，默认启用
-         */
-        private boolean enabled = true;
-
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
+    public List<String> getPathPatterns() {
+        return pathPatterns;
     }
 
+    public void setPathPatterns(List<String> pathPatterns) {
+        this.pathPatterns = pathPatterns;
+    }
+
+    public List<String> getExcludePatterns() {
+        return excludePatterns;
+    }
+
+    public void setExcludePatterns(List<String> excludePatterns) {
+        this.excludePatterns = excludePatterns;
+    }
 }

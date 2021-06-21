@@ -10,12 +10,14 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 /**
  * springboot 环境测试
@@ -32,6 +34,9 @@ public class SpringbootEnvTest extends BaseTest {
 
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private XssProperties xssProperties;
 
     @Test
     public void testJackson() throws JsonProcessingException {
@@ -108,5 +113,34 @@ public class SpringbootEnvTest extends BaseTest {
                 .getContentAsString(StandardCharsets.UTF_8);
         Assert.assertEquals(cleanedHtml, returnContent);
     }
+
+    /**
+     * 测试没有配置过滤规则的情况，所有测试都应该通过
+     */
+    @Test
+    public void testAllShouldPassWithoutProfileFilterPattern() throws Exception {
+        testRequestByPostBody();
+        testRequestByGetMethod();
+        testFormRequestByPostMethod();
+        testFormRequestByPostMethodWithRequestParam();
+    }
+
+    @Test
+    public void testFilterPattenPattern() throws Exception {
+
+        List<String> pathPatterns = xssProperties.getPathPatterns();
+        List<String> excludePatterns = xssProperties.getExcludePatterns();
+        pathPatterns.clear();
+        excludePatterns.clear();
+
+        //不做XSS的pattern
+        excludePatterns.add("");
+
+        testRequestByPostBody();
+        testRequestByGetMethod();
+        testFormRequestByPostMethod();
+        testFormRequestByPostMethodWithRequestParam();
+    }
+
 
 }

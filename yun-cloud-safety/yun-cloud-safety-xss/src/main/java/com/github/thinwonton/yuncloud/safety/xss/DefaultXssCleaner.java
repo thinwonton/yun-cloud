@@ -1,10 +1,10 @@
 package com.github.thinwonton.yuncloud.safety.xss;
 
-import org.apache.commons.lang3.StringUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
+import org.springframework.util.StringUtils;
 
 public class DefaultXssCleaner implements XssCleaner {
 
@@ -12,7 +12,7 @@ public class DefaultXssCleaner implements XssCleaner {
 
     @Override
     public String clean(String html) {
-        if (StringUtils.isNotBlank(html)) {
+        if (StringUtils.hasText(html)) {
             return Jsoup.clean(html, WHITE_LIST);
         }
         return html;
@@ -55,7 +55,7 @@ public class DefaultXssCleaner implements XssCleaner {
             //不允许 javascript 开头的 src 和 href
             if ("src".equalsIgnoreCase(attr.getKey()) || "href".equalsIgnoreCase(attr.getKey())) {
                 String value = attr.getValue();
-                if (StringUtils.isNotBlank(value) && value.toLowerCase().startsWith("javascript")) {
+                if (StringUtils.hasText(value) && value.toLowerCase().startsWith("javascript")) {
                     return false;
                 }
             }

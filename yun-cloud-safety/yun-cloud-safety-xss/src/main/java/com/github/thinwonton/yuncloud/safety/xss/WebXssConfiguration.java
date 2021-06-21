@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import static com.github.thinwonton.yuncloud.safety.xss.XssProperties.XSS_PROPERTIES_ENABLED;
@@ -21,11 +22,11 @@ import static com.github.thinwonton.yuncloud.safety.xss.XssProperties.XSS_PROPER
 @EnableConfigurationProperties({XssProperties.class})
 public class WebXssConfiguration implements WebMvcConfigurer {
 
-//    private XssProperties properties;
-//
-//    public WebXssConfiguration(XssProperties properties) {
-//        this.properties = properties;
-//    }
+    private XssProperties properties;
+
+    public WebXssConfiguration(XssProperties properties) {
+        this.properties = properties;
+    }
 
     @Bean
     @ConditionalOnMissingBean
@@ -35,7 +36,6 @@ public class WebXssConfiguration implements WebMvcConfigurer {
 
     @Bean
     @ConditionalOnClass(value = {ObjectMapper.class, Jackson2ObjectMapperBuilder.class})
-    @ConditionalOnProperty(value = "yun.xss.jackson.enabled", havingValue = "true", matchIfMissing = true)
     public Jackson2ObjectMapperBuilderCustomizer jacksonXssCleanJsonDeserializerCustomer(XssCleaner xssCleaner) {
         return builder -> builder.deserializers(new JacksonXssCleanJsonDeserializer(xssCleaner));
     }
@@ -44,5 +44,11 @@ public class WebXssConfiguration implements WebMvcConfigurer {
     public void addFormatters(FormatterRegistry registry) {
         XssCleaner xssCleaner = xssCleaner();
         registry.addConverter(new XssCleanConverter(xssCleaner));
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        XssCleanMarkerHandlerInterceptor handlerInterceptor = new XssCleanMarkerHandlerInterceptor(properties);
+        registry.addInterceptor(handlerInterceptor);
     }
 }

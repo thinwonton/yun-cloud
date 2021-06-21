@@ -19,14 +19,14 @@ public class XssCleanConverter implements Converter<String, String> {
     }
 
     @Override
-    public String convert(String source) {
-        if (StringUtils.hasText(source)) {
-            String value = xssCleaner.clean(source);
+    public String convert(String text) {
+        if (StringUtils.hasText(text) && XssCleanMarker.shouldClean()) {
+            String cleanText = xssCleaner.clean(text);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("request param [{}] cleaned up by XssCleanConverter, current value is:{}.", source, value);
+                LOGGER.debug("request param [{}] cleaned up by XssCleanConverter, current value is:{}.", text, cleanText);
             }
-            return value;
+            return cleanText;
         }
-        return source;
+        return text;
     }
 }

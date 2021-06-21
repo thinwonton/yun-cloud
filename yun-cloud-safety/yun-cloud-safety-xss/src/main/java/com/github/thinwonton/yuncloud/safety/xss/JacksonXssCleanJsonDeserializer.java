@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 
@@ -29,16 +30,15 @@ public class JacksonXssCleanJsonDeserializer extends JsonDeserializer<String> {
 
     @Override
     public String deserialize(JsonParser p, DeserializationContext context) throws IOException, JsonProcessingException {
-        // XSS filter
+        // XSS clean
         String text = p.getValueAsString();
-        if (text == null) {
-            return null;
-        } else {
-            String value = xssCleaner.clean(text);
+        if (StringUtils.hasText(text) && XssCleanMarker.shouldClean()) {
+            String cleanText = xssCleaner.clean(text);
             if (LOGGER.isDebugEnabled()) {
-                LOGGER.debug("Json property value: [{}] cleaned up by JacksonXssCleanJsonDeserializer, current value is:{}.", text, value);
+                LOGGER.debug("Json property value: [{}] cleaned up by JacksonXssCleanJsonDeserializer, current value is:{}.", text, cleanText);
             }
-            return value;
+            return cleanText;
         }
+        return text;
     }
 }
