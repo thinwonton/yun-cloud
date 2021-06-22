@@ -1,6 +1,5 @@
 package com.github.thinwonton.yuncloud.safety.xss;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,15 +8,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 
 /**
  * springboot 环境测试
@@ -35,44 +33,25 @@ public class SpringbootEnvTest extends BaseTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
-    private XssProperties xssProperties;
-
     @Test
-    public void testJackson() throws JsonProcessingException {
-        Assert.assertNotNull(applicationContext);
-        ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper.class);
-        BaseTest.Paper toSerialize = new BaseTest.Paper(dirtyHtml);
-        String jsonStrToTest = objectMapper.writeValueAsString(toSerialize);
-        BaseTest.Paper paper = objectMapper.readValue(jsonStrToTest, BaseTest.Paper.class);
-        Assert.assertEquals(cleanedHtml, paper.getContent());
-    }
-
-    /**
-     * 测试JACKSON转换request body
-     */
-    @Test
-    public void testRequestByPostBody() throws Exception {
-
-        ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper.class);
-        BaseTest.Paper toSerialize = new BaseTest.Paper(dirtyHtml);
-        String requestBody = objectMapper.writeValueAsString(toSerialize);
-
-        String url = "/test/xssByPostBody";
+    public void testGetUsingSimple() throws Exception {
+        String url = "/test/xssByGetUsingSimple";
         MvcResult mvcResult = mockMvc.perform(
-                MockMvcRequestBuilders.post(url)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody)
+                MockMvcRequestBuilders.get(url)
+                        .queryParam("content", dirtyHtml)
         )
                 .andReturn();
+
+        Assert.assertEquals(HttpStatus.OK.value(), mvcResult.getResponse().getStatus());
+
         String returnContent = mvcResult.getResponse()
                 .getContentAsString(StandardCharsets.UTF_8);
         Assert.assertEquals(cleanedHtml, returnContent);
     }
 
     @Test
-    public void testRequestByGetMethod() throws Exception {
-        String url = "/test/xss";
+    public void testGetUsingModel() throws Exception {
+        String url = "/test/xssByGetUsingModel";
         MvcResult mvcResult = mockMvc.perform(
                 MockMvcRequestBuilders.get(url)
                         .queryParam("content", dirtyHtml)
@@ -83,12 +62,9 @@ public class SpringbootEnvTest extends BaseTest {
         Assert.assertEquals(cleanedHtml, returnContent);
     }
 
-    /**
-     * 测试Post方法提交FORM表单
-     */
     @Test
-    public void testFormRequestByPostMethod() throws Exception {
-        String url = "/test/xss";
+    public void testFormPostUsingSimple() throws Exception {
+        String url = "/test/xssByFormPostUsingSimple";
         MvcResult mvcResult = mockMvc.perform(
                 MockMvcRequestBuilders.post(url)
                         .param("content", dirtyHtml)
@@ -101,8 +77,8 @@ public class SpringbootEnvTest extends BaseTest {
     }
 
     @Test
-    public void testFormRequestByPostMethodWithRequestParam() throws Exception {
-        String url = "/test/xssWithRequestParam";
+    public void testFormPostUsingModel() throws Exception {
+        String url = "/test/xssByFormPostUsingModel";
         MvcResult mvcResult = mockMvc.perform(
                 MockMvcRequestBuilders.post(url)
                         .param("content", dirtyHtml)
@@ -114,33 +90,23 @@ public class SpringbootEnvTest extends BaseTest {
         Assert.assertEquals(cleanedHtml, returnContent);
     }
 
-    /**
-     * 测试没有配置过滤规则的情况，所有测试都应该通过
-     */
     @Test
-    public void testAllShouldPassWithoutProfileFilterPattern() throws Exception {
-        testRequestByPostBody();
-        testRequestByGetMethod();
-        testFormRequestByPostMethod();
-        testFormRequestByPostMethodWithRequestParam();
+    public void testPostJsonBody() throws Exception {
+
+        ObjectMapper objectMapper = applicationContext.getBean(ObjectMapper.class);
+        BaseTest.Paper toSerialize = new BaseTest.Paper(dirtyHtml);
+        String requestBody = objectMapper.writeValueAsString(toSerialize);
+
+        String url = "/test/xssByPostJsonBody";
+        MvcResult mvcResult = mockMvc.perform(
+                MockMvcRequestBuilders.post(url)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody)
+        )
+                .andReturn();
+        String returnContent = mvcResult.getResponse()
+                .getContentAsString(StandardCharsets.UTF_8);
+        Assert.assertEquals(cleanedHtml, returnContent);
     }
-
-    @Test
-    public void testFilterPattenPattern() throws Exception {
-
-        List<String> pathPatterns = xssProperties.getPathPatterns();
-        List<String> excludePatterns = xssProperties.getExcludePatterns();
-        pathPatterns.clear();
-        excludePatterns.clear();
-
-        //不做XSS的pattern
-        excludePatterns.add("");
-
-        testRequestByPostBody();
-        testRequestByGetMethod();
-        testFormRequestByPostMethod();
-        testFormRequestByPostMethodWithRequestParam();
-    }
-
 
 }
