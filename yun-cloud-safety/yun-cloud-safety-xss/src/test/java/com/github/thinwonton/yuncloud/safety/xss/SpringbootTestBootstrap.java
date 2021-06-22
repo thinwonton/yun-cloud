@@ -12,11 +12,20 @@ class SpringbootTestBootstrap {
     static class TestController {
 
         /**
+         * 通过url的path，获取请求参数
+         */
+        @ResponseBody
+        @GetMapping("/xssByGetUsingPath/{content}")
+        public String testGetUsingPath(@PathVariable(name = "content") String content) {
+            return content;
+        }
+
+        /**
          * 通过url的query params获取请求数据. 方法使用简单类型进行接收
          */
         @ResponseBody
         @GetMapping("/xssByGetUsingSimple")
-        public String testUsingSimple(@RequestParam(name = "content") String content) {
+        public String testGetUsingSimple(@RequestParam(name = "content") String content) {
             return content;
         }
 
